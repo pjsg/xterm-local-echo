@@ -18,8 +18,8 @@
     "build": "microbundle",
     "dev": "microbundle watch",
     "test": "jest --silent=false --verbose false",
-    "lint:eslint": "eslint \"./{src,test,lib}/**/*.{js,ts}\" --fix",
-    "lint:prettier": "prettier \"./{src,test,lib}/**/*.{js,ts}\" --write",
+    "lint:eslint": "eslint \"./{src,test}/**/*.ts\" --fix",
+    "lint:prettier": "prettier \"./{src,test}/**/*.ts\" --write",
     "prepublishOnly": "yarn build"
   },
   "repository": "git+https://github.com/wavesoft/local-echo.git",
