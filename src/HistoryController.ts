@@ -15,7 +15,10 @@ export class HistoryController {
     if (entry.trim() === "") return;
     // Skip duplicate entries
     const lastEntry = this.entries[this.entries.length - 1];
-    if (entry == lastEntry) return;
+    if (entry === lastEntry) {
+      this.cursor = this.entries.length;
+      return;
+    }
     // Keep track of entries
     this.entries.push(entry);
     if (this.entries.length > this.size) {
