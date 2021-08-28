@@ -20,7 +20,9 @@ The local echo controller tries to replicate most of the bash-like user experien
 
 ## Demo
 
+check it
 
+[https://kobakazu0429.github.io/local-echo/](https://kobakazu0429.github.io/local-echo/)
 
 ## Usage
 
