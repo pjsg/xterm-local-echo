@@ -1,4 +1,4 @@
-const {
+import {
   wordBoundaries,
   closestLeftBoundary,
   closestRightBoundary,
@@ -6,7 +6,7 @@ const {
   isIncompleteInput,
   collectAutocompleteCandidates,
   getSharedFragment,
-} = require("../src/Utils");
+} from "../src/Utils";
 
 /**
  * Test word boundary detection
@@ -150,12 +150,12 @@ test("collectAutocompleteCandidates()", () => {
     return ["a", "ab", "abc"];
   };
 
-  const firstCb = (index) => {
+  const firstCb = (index: number) => {
     if (index === 1) return ["b", "bc", "bcd"];
     return [];
   };
 
-  const customCb = (index, tokens, custom) => {
+  const customCb = (index: number, tokens: any, custom: any) => {
     return custom;
   };
 
