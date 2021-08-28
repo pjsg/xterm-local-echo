@@ -47,5 +47,8 @@
   },
   "dependencies": {
     "shell-quote": "^1.7.2"
+  },
+  "peerDependencies": {
+    "xterm": "^4.13.0"
   }
 }
