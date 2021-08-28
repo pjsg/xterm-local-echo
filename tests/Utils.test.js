@@ -6,7 +6,7 @@ const {
   isIncompleteInput,
   collectAutocompleteCandidates,
   getSharedFragment,
-} = require("./Utils");
+} = require("../src/Utils");
 
 /**
  * Test word boundary detection
