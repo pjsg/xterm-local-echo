@@ -2,18 +2,27 @@
   "name": "local-echo",
   "version": "0.2.0",
   "description": "A local echo controller for xterm.js",
-  "main": "index.js",
+  "type": "module",
+  "source": "./src/index.ts",
+  "exports": "./dist/index.modern.js",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.module.js",
+  "unpkg": "./dist/index.umd.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
-    "test": "jest --silent=false --verbose false",
-    "build": "webpack",
     "lint": "npm run lint:eslint && npm run lint:prettier",
+    "build": "microbundle",
+    "dev": "microbundle watch",
+    "test": "jest --silent=false --verbose false",
     "lint:eslint": "eslint \"./{src,test,lib}/**/*.{js,ts}\" --fix",
-    "lint:prettier": "prettier \"./{src,test,lib}/**/*.{js,ts}\" --write"
+    "lint:prettier": "prettier \"./{src,test,lib}/**/*.{js,ts}\" --write",
+    "prepublishOnly": "yarn build"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/wavesoft/local-echo.git"
-  },
+  "repository": "git+https://github.com/wavesoft/local-echo.git",
   "keywords": [
     "xterm",
     "echo",
@@ -39,16 +48,13 @@
     "babel-loader": "^8.0.2",
     "eslint": "^7.32.0",
     "jest": "^27.1.0",
+    "microbundle": "^0.13.3",
     "regenerator-runtime": "^0.12.1",
     "ts-jest": "^27.0.5",
     "typescript": "^4.4.2",
-    "webpack": "^4.18.0",
-    "webpack-cli": "^3.1.0"
+    "xterm": "^4.13.0"
   },
   "dependencies": {
     "shell-quote": "^1.7.2"
-  },
-  "peerDependencies": {
-    "xterm": "^4.13.0"
   }
 }
