@@ -445,7 +445,7 @@ export class LocalEchoAddon implements ITerminalAddon {
   /**
    * Handle terminal input
    */
-  private handleTermData(data: string) {
+  private handleTermData = (data: string) => {
     if (!this.active) return;
 
     // If we have an active character prompt, satisfy it in priority
@@ -463,12 +463,12 @@ export class LocalEchoAddon implements ITerminalAddon {
     } else {
       this.handleData(data);
     }
-  }
+  };
 
   /**
    * Handle a single piece of information from the terminal.
    */
-  private handleData(data: string) {
+  private handleData = (data: string) => {
     if (!this.active) return;
     const ord = data.charCodeAt(0);
     let ofs;
@@ -625,5 +625,5 @@ export class LocalEchoAddon implements ITerminalAddon {
     } else {
       this.handleCursorInsert(data);
     }
-  }
+  };
 }
