@@ -1,5 +1,6 @@
-# 📢 local-echo [![Travis (.org)](https://img.shields.io/travis/wavesoft/local-echo.svg)](https://travis-ci.org/wavesoft/local-echo) [![Try it in codepen.io](https://img.shields.io/badge/Try%20it-codepen.io-blue.svg)](https://codepen.io/anon/pen/qMYjGZ?editors=0010)
+# local-echo 
 
+this repository is folkd from [[wavesoft/local-echo](https://github.com/wavesoft/local-echo)] and rewrited to typescript.
 
 > A fully functional local echo controller for xterm.js
 
@@ -17,6 +18,10 @@ The local echo controller tries to replicate most of the bash-like user experien
 - _Local History_: Just like bash, access the commands you previously typed using the `up` and `down` arrows.
 - _Tab-Completion_: Provides support for registering your own tab-completion callbacks.
 
+## Demo
+
+
+
 ## Usage
 
 ### As ES6 Module
@@ -24,63 +29,46 @@ The local echo controller tries to replicate most of the bash-like user experien
 1. Install it using `npm`:
 
     ```sh
-    npm install --save wavesoft/local-echo
+    npm install --save @kobakazu0429/xterm-local-echo
     ```
 
     Or yarn:
 
     ```sh
-    yarn add wavesoft/local-echo
+    yarn add @kobakazu0429/xterm-local-echo
     ```
 
 2. Use it like so:
 
     ```js
-    import { Terminal } from 'xterm';
-    import LocalEchoController from 'local-echo';
+    import { Terminal } from "xterm";
+    import { LocalEchoAddon } from "@kobakazu0429/xterm-local-echo";
 
-    // Start an xterm.js instance
     const term = new Terminal();
-    term.open(document.getElementById('terminal'));
+    term.open(document.getElementById("terminal"));
 
-    // Create a local echo controller (xterm.js v3)
-    const localEcho = new LocalEchoController(term);
-    // Create a local echo controller (xterm.js >=v4)
-    const localEcho = new LocalEchoController();
+    // Create a local controller
+    const localEcho = new LocalEchoAddon();
     term.loadAddon(localEcho);
 
-    // Read a single line from the user
-    localEcho.read("~$ ")
-        .then(input => alert(`User entered: ${input}`))
-        .catch(error => alert(`Error reading: ${error}`));
-    ```
+    // Create some auto-comple handlers
+    localEcho.addAutocompleteHandler((index) => {
+      if (index !== 0) return [];
+      return ["bash", "ls", "ps", "cp", "chown", "chmod"];
+    });
+    localEcho.addAutocompleteHandler((index) => {
+      if (index === 0) return [];
+      return ["some-file", "another-file", ".git", ".gitignore"];
+    });
 
-### Directly in the browser
-
-1. Download `local-echo.js` from the latest [release](/wavesoft/local-echo/releases)
-2. Include it in your HTML:
-
-    ```
-    <script src="/js/local-echo.js"></script>
-    ```
-
-3. Use it like so:
-
-    ```js
-    // Start an xterm.js instance
-    const term = new Terminal();
-    term.open(document.getElementById('terminal'));
-
-    // Create a local echo controller (xterm.js v3)
-    const localEcho = new LocalEchoController(term);
-    // Create a local echo controller (xterm.js >=v4)
-    const localEcho = new LocalEchoController();
-    term.loadAddon(localEcho);
-
-    // Read a single line from the user
-    localEcho.read("~$ ")
-        .then(input => alert(`User entered: ${input}`))
-        .catch(error => alert(`Error reading: ${error}`));
+    // Infinite loop of reading lines
+    const prompt = "~$ ";
+    const readLine = async () => {
+      const input = await localEcho.read(prompt);
+      localEcho.println("You typed: '" + input + "'");
+      readLine();
+    };
+    readLine();
     ```
 
 ## API Reference
