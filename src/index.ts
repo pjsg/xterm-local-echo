@@ -1,4 +1,6 @@
 import type { Terminal, ITerminalAddon, IDisposable } from "xterm";
+import ansiRegex from "./ansi-regex";
+
 import { HistoryController } from "./HistoryController";
 import {
   closestLeftBoundary,
@@ -229,7 +231,7 @@ export class LocalEchoAddon implements ITerminalAddon {
    */
   private applyPromptOffset(input: string, offset: number) {
     const newInput = this.applyPrompts(input.substr(0, offset));
-    return newInput.length;
+    return newInput.replace(ansiRegex(), "").length;
   }
 
   /**

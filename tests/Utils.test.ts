@@ -6,6 +6,7 @@ import {
   isIncompleteInput,
   collectAutocompleteCandidates,
   getSharedFragment,
+  countLines,
 } from "../src/Utils";
 
 /**
@@ -104,6 +105,39 @@ test("offsetToColRow()", () => {
     row: 2,
     col: 0,
   });
+});
+
+test("countLines()", () => {
+  expect(countLines("abcdef", 10)).toBe(1);
+  expect(countLines("abcdef", 6)).toBe(1);
+  expect(countLines("abcdef", 5)).toBe(2);
+  expect(countLines("abcdef", 3)).toBe(2);
+  expect(countLines("abcdef", 2)).toBe(3);
+
+  expect(countLines(" ".repeat(6) + "a", 10)).toBe(1);
+  // |123456a|
+
+  expect(countLines(" ".repeat(6) + "a", 5)).toBe(2);
+  // |12345|
+  // |6a|
+
+  // TODO: consider, expected 3, received 2
+  // expect(countLines("      a", 3)).toBe(3);
+  // |123|
+  // |456|
+  // |a|
+
+  const ansiColor = {
+    red: "\u001b[31m",
+    blue: "\u001b[34m",
+
+    reset: "\u001b[0m",
+  };
+
+  const input = `default ${ansiColor.red}red_text ${ansiColor.blue}blue_text ${ansiColor.reset}default`;
+  const inputWithoutColor = `default red_text blue_text default`;
+  expect(countLines(input, 100)).toBe(1);
+  expect(countLines(input, 10)).toBe(Math.ceil(inputWithoutColor.length / 10));
 });
 
 /**

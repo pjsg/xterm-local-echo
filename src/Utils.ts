@@ -1,4 +1,5 @@
 import { parse } from "shell-quote";
+import ansiRegex from "./ansi-regex";
 
 /**
  * Detects all the word boundaries on the given input
@@ -46,7 +47,7 @@ export function offsetToColRow(input: string, offset: number, maxCols: number) {
 
   for (let i = 0; i < offset; ++i) {
     const chr = input.charAt(i);
-    if (chr == "\n") {
+    if (chr === "\n") {
       col = 0;
       row += 1;
     } else {
@@ -65,7 +66,10 @@ export function offsetToColRow(input: string, offset: number, maxCols: number) {
  * Counts the lines in the given input
  */
 export function countLines(input: string, maxCols: number) {
-  return offsetToColRow(input, input.length, maxCols).row + 1;
+  return (
+    offsetToColRow(input, input.replace(ansiRegex(), "").length, maxCols).row +
+    1
+  );
 }
 
 /**
