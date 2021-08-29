@@ -4,7 +4,7 @@
 export class HistoryController {
   constructor(private size: number) {}
 
-  private entries: string[] = [];
+  public entries: string[] = [];
   private cursor = 0;
 
   /**

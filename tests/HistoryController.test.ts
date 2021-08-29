@@ -11,7 +11,7 @@ describe("HistoryController", () => {
     historyController.push("4");
     historyController.push("5");
 
-    expect(historyController["entries"]).toEqual(["3", "4", "5"]);
+    expect(historyController.entries).toEqual(["3", "4", "5"]);
   });
 
   test("history.getPrevious(), .getNext()", () => {
