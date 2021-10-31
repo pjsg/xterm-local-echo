@@ -1,6 +1,6 @@
 {
-  "name": "@kobakazu0429/xterm-local-echo",
-  "version": "0.0.2",
+  "name": "@gytx/xterm-local-echo",
+  "version": "0.1.0",
   "description": "A local echo controller for xterm.js",
   "type": "module",
   "source": "./src/index.ts",
@@ -22,7 +22,7 @@
     "lint:prettier": "prettier \"./{src,test}/**/*.ts\" --write",
     "prepublishOnly": "yarn build"
   },
-  "repository": "git+https://github.com/kobakazu0429/local-echo.git",
+  "repository": "git+https://github.com/Guyutongxue/local-echo.git",
   "keywords": [
     "xterm",
     "echo",
@@ -37,6 +37,10 @@
     {
       "name": "kobakazu0429",
       "email": "kobakazu10@gmail.com"
+    },
+    {
+      "name": "Guyutongxue",
+      "email": "guyutongxue@163.com"
     }
   ],
   "license": "Apache-2.0",
@@ -46,6 +50,7 @@
   "homepage": "https://github.com/kobakazu0429/local-echo#readme",
   "devDependencies": {
     "@kobakazu0429/eslint-config-typescript": "^2.1.3",
+    "@types/estree": "^0.0.50",
     "@types/jest": "^27.0.1",
     "@types/shell-quote": "^1.7.1",
     "eslint": "^7.32.0",

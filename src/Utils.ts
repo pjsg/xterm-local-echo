@@ -1,5 +1,6 @@
 import { parse } from "shell-quote";
 import ansiRegex from "./ansi-regex";
+import { wcwidth } from "./unicode";
 
 /**
  * Detects all the word boundaries on the given input
@@ -42,9 +43,7 @@ export function closestRightBoundary(input: string, offset: number) {
  * the navigation on the terminal, wrapping when they reach the column width.
  */
 export function offsetToColRow(input: string, offset: number, maxCols: number) {
-  let row = 0,
-    col = 0;
-
+  let row = 0, col = 0;
   for (let i = 0; i < offset; ++i) {
     const chr = input.charAt(i);
     if (chr === "\n") {
@@ -52,7 +51,7 @@ export function offsetToColRow(input: string, offset: number, maxCols: number) {
       row += 1;
     } else {
       col += 1;
-      if (col > maxCols) {
+      if (col === maxCols) {
         col = 0;
         row += 1;
       }
@@ -61,6 +60,62 @@ export function offsetToColRow(input: string, offset: number, maxCols: number) {
 
   return { row, col };
 }
+
+/**
+ * Covert tabs (\t) to spaces.
+ * @param input 
+ * @returns 
+ */
+export function replaceTabToSpace(input: string) {
+  let output = "";
+  let col = 0;
+  for (const i of input) {
+    if (i === "\t") {
+      const spaces = 8 - col % 8;
+      output += ' '.repeat(spaces);
+      col += spaces;
+    } else {
+      output += i;
+      col += 1;
+      if (i === "\n") {
+        col = 0;
+      }
+    }
+  }
+  return output;
+}
+
+export function parseUnicode(input: string, maxCols: number) {
+  let output = "";
+  let col = 0;
+  for (let i = 0; i < input.length; ++i) {
+    const width = wcwidth(input.charCodeAt(i));
+    if (width === 0) {
+      if (input[i] === "\n") {
+        col = 0;
+      }
+      continue;
+    } else if (width === 2) {
+      if (col + width > maxCols) {
+        output += ' ';
+        col += 1;
+        i--;
+      } else {
+        output += input[i];
+        output += ' ';
+        col += width;
+      }
+    } else {
+      output += input[i];
+      col += width;
+    }
+    if (col === maxCols) {
+      col = 0;
+    }
+  }
+  return output;
+}
+
 
 /**
  * Counts the lines in the given input

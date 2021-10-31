@@ -12,6 +12,8 @@ import {
   isIncompleteInput,
   offsetToColRow,
   getSharedFragment,
+  replaceTabToSpace,
+  parseUnicode,
 } from "./Utils";
 
 interface Size {
@@ -33,18 +35,17 @@ interface AutoCompleteHandler {
 
 export interface Option {
   historySize: number;
+  enableAutocomplete: boolean;
   maxAutocompleteEntries: number;
+  enableIncompleteInput: boolean;
 }
 
 export class LocalEchoAddon implements ITerminalAddon {
-  constructor(
-    options: Option = {
-      historySize: 10,
-      maxAutocompleteEntries: 100,
-    }
-  ) {
-    this.history = new HistoryController(options.historySize);
-    this.maxAutocompleteEntries = options.maxAutocompleteEntries;
+  constructor(option?: Partial<Option>) {
+    this.history = new HistoryController(option?.historySize ?? 10);
+    this.enableAutocomplete = option?.enableAutocomplete ?? true;
+    this.maxAutocompleteEntries = option?.maxAutocompleteEntries ?? 100;
+    this.enableIncompleteInput = option?.enableIncompleteInput ?? true;
   }
 
   public history: HistoryController;
@@ -52,7 +53,10 @@ export class LocalEchoAddon implements ITerminalAddon {
   private terminal!: Terminal;
   private disposables: IDisposable[] = [];
 
+  private enableAutocomplete: boolean;
   private maxAutocompleteEntries: number;
+
+  private enableIncompleteInput: boolean;
 
   private autocompleteHandlers: AutoCompleteHandler[] = [];
   private active = false;
@@ -235,9 +239,12 @@ export class LocalEchoAddon implements ITerminalAddon {
    * additions to the input.
    */
   private applyPromptOffset(input: string, offset: number) {
-    const newInput = this.applyPrompts(input.substr(0, offset));
+    let newInput = this.applyPrompts(input.substr(0, offset));
+    newInput = this.toSingleWidth(newInput);
     return newInput.replace(ansiRegex(), "").length;
   }
+
+  private toSingleWidth = (str: string) => parseUnicode(replaceTabToSpace(str), this.terminal.cols);
 
   /**
    * Clears the current prompt
@@ -246,14 +253,14 @@ export class LocalEchoAddon implements ITerminalAddon {
    * and move the cursor in the beginning of the first line of the prompt.
    */
   private clearInput() {
-    const currentPrompt = this.applyPrompts(this.input);
+    const currentPrompt = this.toSingleWidth(this.applyPrompts(this.input));
 
     // Get the overall number of lines to clear
     const allRows = countLines(currentPrompt, this.terminalSize.cols);
 
     // Get the line we are currently in
     const promptCursor = this.applyPromptOffset(this.input, this.cursor);
-    const { row } = offsetToColRow(
+    const { col, row } = offsetToColRow(
       currentPrompt,
       promptCursor,
       this.terminalSize.cols
@@ -261,6 +268,12 @@ export class LocalEchoAddon implements ITerminalAddon {
 
     // First move on the last line
     const moveRows = allRows - row - 1;
+
+    // console.log('clear: ', { col, row, moveRows });
+
+    // negative, move up
+    for (let i = moveRows; i < 0; ++i) this.terminal.write("\x1B[2K\x1B[F");
+    // positive, move down
     for (let i = 0; i < moveRows; ++i) this.terminal.write("\x1B[E");
 
     // Clear current input line(s)
@@ -279,8 +292,10 @@ export class LocalEchoAddon implements ITerminalAddon {
     if (clearInput) this.clearInput();
 
     // Write the new input lines, including the current prompt
-    const newPrompt = this.applyPrompts(newInput);
+    // Need to replace tab here, for new-line compatibility
+    let newPrompt = replaceTabToSpace(this.applyPrompts(newInput));
     this.print(newPrompt);
+    newPrompt = this.toSingleWidth(newPrompt);
 
     // Trim cursor overflow
     if (this.cursor > newInput.length) {
@@ -296,6 +311,12 @@ export class LocalEchoAddon implements ITerminalAddon {
       this.terminalSize.cols
     );
     const moveUpRows = newLines - row - 1;
+
+    // console.log({ col, row, moveUpRows });
+
+    // xterm keep the cursor on last column when it is at the end of the line.
+    // Move it to next line.
+    if (col === 0) this.terminal.write("\x1B[E");
 
     this.terminal.write("\r");
     for (let i = 0; i < moveUpRows; ++i) this.terminal.write("\x1B[F");
@@ -547,7 +568,7 @@ export class LocalEchoAddon implements ITerminalAddon {
     } else if (ord < 32 || ord === 0x7f) {
       switch (data) {
         case "\r": // ENTER
-          if (isIncompleteInput(this.input)) {
+          if (this.enableIncompleteInput && isIncompleteInput(this.input)) {
             this.handleCursorInsert("\n");
           } else {
             this.handleReadComplete();
@@ -559,61 +580,63 @@ export class LocalEchoAddon implements ITerminalAddon {
           break;
 
         case "\t": // TAB
-          if (this.autocompleteHandlers.length > 0) {
-            const inputFragment = this.input.substr(0, this.cursor);
-            const hasTailingSpace = hasTailingWhitespace(inputFragment);
-            const candidates = collectAutocompleteCandidates(
-              this.autocompleteHandlers,
-              inputFragment
-            );
-
-            // Sort candidates
-            candidates.sort();
-
-            // Depending on the number of candidates, we are handing them in
-            // a different way.
-            if (candidates.length === 0) {
-              // No candidates? Just add a space if there is none already
-              if (!hasTailingSpace) {
-                this.handleCursorInsert(" ");
-              }
-            } else if (candidates.length === 1) {
-              // Just a single candidate? Complete
-              const lastToken = getLastToken(inputFragment);
-              this.handleCursorInsert(
-                candidates[0].substr(lastToken.length) + " "
+          if (this.enableAutocomplete) {
+            if (this.autocompleteHandlers.length > 0) {
+              const inputFragment = this.input.substr(0, this.cursor);
+              const hasTailingSpace = hasTailingWhitespace(inputFragment);
+              const candidates = collectAutocompleteCandidates(
+                this.autocompleteHandlers,
+                inputFragment
               );
-            } else if (candidates.length <= this.maxAutocompleteEntries) {
-              // search for a shared fragement
-              const sameFragment = getSharedFragment(inputFragment, candidates);
 
-              // if there's a shared fragement between the candidates
-              // print complete the shared fragment
-              if (sameFragment) {
+              // Sort candidates
+              candidates.sort();
+
+              // Depending on the number of candidates, we are handing them in
+              // a different way.
+              if (candidates.length === 0) {
+                // No candidates? Just add a space if there is none already
+                if (!hasTailingSpace) {
+                  this.handleCursorInsert(" ");
+                }
+              } else if (candidates.length === 1) {
+                // Just a single candidate? Complete
                 const lastToken = getLastToken(inputFragment);
-                this.handleCursorInsert(sameFragment.substr(lastToken.length));
-              }
+                this.handleCursorInsert(
+                  candidates[0].substr(lastToken.length) + " "
+                );
+              } else if (candidates.length <= this.maxAutocompleteEntries) {
+                // search for a shared fragement
+                const sameFragment = getSharedFragment(inputFragment, candidates);
 
-              // If we are less than maximum auto-complete candidates, print
-              // them to the user and re-start prompt
-              this.printAndRestartPrompt(() => {
-                this.printWide(candidates);
-              });
-            } else {
-              // If we have more than maximum auto-complete candidates, print
-              // them only if the user acknowledges a warning
-              this.printAndRestartPrompt(() =>
-                this.readChar(
-                  `Display all ${candidates.length} possibilities? (y or n)`
-                ).then((yn) => {
-                  if (yn == "y" || yn == "Y") {
-                    this.printWide(candidates);
-                  }
-                })
-              );
+                // if there's a shared fragement between the candidates
+                // print complete the shared fragment
+                if (sameFragment) {
+                  const lastToken = getLastToken(inputFragment);
+                  this.handleCursorInsert(sameFragment.substr(lastToken.length));
+                }
+
+                // If we are less than maximum auto-complete candidates, print
+                // them to the user and re-start prompt
+                this.printAndRestartPrompt(() => {
+                  this.printWide(candidates);
+                });
+              } else {
+                // If we have more than maximum auto-complete candidates, print
+                // them only if the user acknowledges a warning
+                this.printAndRestartPrompt(() =>
+                  this.readChar(
+                    `Display all ${candidates.length} possibilities? (y or n)`
+                  ).then((yn) => {
+                    if (yn == "y" || yn == "Y") {
+                      this.printWide(candidates);
+                    }
+                  })
+                );
+              }
             }
           } else {
-            this.handleCursorInsert("    ");
+            this.handleCursorInsert("\t");
           }
           break;
 

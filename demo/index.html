@@ -28,7 +28,7 @@
     </div>
     <div id="terminal"></div>
   </body>
-  <script src="./index.umd.js"></script>
+  <script src="../dist/index.umd.js"></script>
   <!-- <script src="./main.ts"></script> -->
   <script>
     const { LocalEchoAddon } = window.xtermLocalEcho;
@@ -37,7 +37,10 @@
     term.open(document.getElementById("terminal"));
 
     // Create a local controller
-    const localEcho = new LocalEchoAddon();
+    const localEcho = new LocalEchoAddon({
+      enableAutocomplete: false,
+      enableIncompleteInput: false
+    });
     term.loadAddon(localEcho);
 
     // Create some auto-comple handlers
