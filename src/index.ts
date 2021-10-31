@@ -313,7 +313,7 @@ export class LocalEchoAddon implements ITerminalAddon {
     );
     const moveUpRows = newLines - row - 1;
 
-    console.log({ col, row, moveUpRows });
+    // console.log({ col, row, moveUpRows });
 
     // xterm keep the cursor on last column when it is at the end of the line.
     // Move it to next line.

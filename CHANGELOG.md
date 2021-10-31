@@ -1,6 +1,6 @@
 ## Changelog
 
-## 0.1.1
+## 0.1.2, 0.1.1
 *2021.10.31*
 
 - Bugfix: remove extra newline when no prompt is given.
