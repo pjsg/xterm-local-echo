@@ -104,7 +104,7 @@ export class LocalEchoAddon implements ITerminalAddon {
    * typing a single line
    */
   public async read(prompt: string, continuationPrompt = "> ") {
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       this.terminal.write(prompt);
       this.activePrompt = {
         prompt,
@@ -244,6 +244,7 @@ export class LocalEchoAddon implements ITerminalAddon {
     return newInput.replace(ansiRegex(), "").length;
   }
 
+  /** Combine tab->space and CJK->space conversion. This make cursor calculation correct. */ 
   private toSingleWidth = (str: string) => parseUnicode(replaceTabToSpace(str), this.terminal.cols);
 
   /**
@@ -312,11 +313,11 @@ export class LocalEchoAddon implements ITerminalAddon {
     );
     const moveUpRows = newLines - row - 1;
 
-    // console.log({ col, row, moveUpRows });
+    console.log({ col, row, moveUpRows });
 
     // xterm keep the cursor on last column when it is at the end of the line.
     // Move it to next line.
-    if (col === 0) this.terminal.write("\x1B[E");
+    if (row !== 0 && col === 0) this.terminal.write("\x1B[E");
 
     this.terminal.write("\r");
     for (let i = 0; i < moveUpRows; ++i) this.terminal.write("\x1B[F");

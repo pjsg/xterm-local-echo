@@ -1,6 +1,6 @@
 # local-echo 
 
-this repository is folkd from [[wavesoft/local-echo](https://github.com/wavesoft/local-echo)] and rewrited to typescript.
+this repository is forked from [kobakazu0429/local-echo](https://github.com/kobakazu0429/local-echo) (forked from [wavesoft/local-echo](https://github.com/wavesoft/local-echo), rewrited to typescript).
 
 > A fully functional local echo controller for xterm.js
 
@@ -17,12 +17,16 @@ The local echo controller tries to replicate most of the bash-like user experien
 - _Full-navigation on multi-line command_: You are not limited only on the line you are editing, you can navigate and edit all of your lines.
 - _Local History_: Just like bash, access the commands you previously typed using the `up` and `down` arrows.
 - _Tab-Completion_: Provides support for registering your own tab-completion callbacks.
+- _Support for Tab and CJK character_
+
 
 ## Demo
 
-check it
+not implemented
 
-[https://kobakazu0429.github.io/local-echo/](https://kobakazu0429.github.io/local-echo/)
+<!-- check it
+
+[https://kobakazu0429.github.io/local-echo/](https://kobakazu0429.github.io/local-echo/) -->
 
 ## Usage
 
@@ -31,20 +35,20 @@ check it
 1. Install it using `npm`:
 
     ```sh
-    npm install --save @kobakazu0429/xterm-local-echo
+    npm install --save @gytx/xterm-local-echo
     ```
 
     Or yarn:
 
     ```sh
-    yarn add @kobakazu0429/xterm-local-echo
+    yarn add @gytx/xterm-local-echo
     ```
 
 2. Use it like so:
 
     ```js
     import { Terminal } from "xterm";
-    import { LocalEchoAddon } from "@kobakazu0429/xterm-local-echo";
+    import { LocalEchoAddon } from "@gytx/xterm-local-echo";
 
     const term = new Terminal();
     term.open(document.getElementById("terminal"));

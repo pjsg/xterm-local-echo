@@ -85,6 +85,14 @@ export function replaceTabToSpace(input: string) {
   return output;
 }
 
+/**
+ * Enumerate each char in @c input, check if it is double-width.
+ * If so, add a space after it to align the cursor.
+ * 
+ * @param input 
+ * @param maxCols 
+ * @returns 
+ */
 export function parseUnicode(input: string, maxCols: number) {
   let output = "";
   let col = 0;
