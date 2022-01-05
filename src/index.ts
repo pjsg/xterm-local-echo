@@ -103,9 +103,19 @@ export class LocalEchoAddon implements ITerminalAddon {
    * Return a promise that will resolve when the user has completed
    * typing a single line
    */
-  public async read(prompt: string, continuationPrompt = "> ") {
+  public async read(prompt?: string, continuationPrompt = "> ") {
     return new Promise<string>((resolve, reject) => {
-      this.terminal.write(prompt);
+      if (typeof prompt === "undefined") {
+        const row = this.terminal.buffer.active.cursorY;
+        const col = this.terminal.buffer.active.cursorX;
+        console.log(row, col);
+        this.terminal.select(0, row, col);
+        prompt = this.terminal.getSelection();
+        console.log(prompt);
+        this.terminal.clearSelection();
+      } else {
+        this.terminal.write(prompt);
+      }
       this.activePrompt = {
         prompt,
         continuationPrompt,
@@ -158,16 +168,18 @@ export class LocalEchoAddon implements ITerminalAddon {
   /**
    * Prints a message and changes line
    */
-  println(message: string) {
-    this.print(message + "\n");
+  async println(message: string) {
+    return this.print(message + "\n");
   }
 
   /**
    * Prints a message and properly handles new-lines
    */
-  print(message: string) {
+  async print(message: string) {
     const normInput = message.replace(/[\r\n]+/g, "\n");
-    this.terminal.write(normInput.replace(/\n/g, "\r\n"));
+    return new Promise<void>((resolve) => {
+      this.terminal.write(normInput.replace(/\n/g, "\r\n"), resolve);
+    });
   }
 
   /**
@@ -239,7 +251,7 @@ export class LocalEchoAddon implements ITerminalAddon {
    * additions to the input.
    */
   private applyPromptOffset(input: string, offset: number) {
-    let newInput = this.applyPrompts(input.substr(0, offset));
+    let newInput = this.applyPrompts(input.substring(0, offset));
     newInput = this.toSingleWidth(newInput);
     return newInput.replace(ansiRegex(), "").length;
   }
@@ -421,13 +433,13 @@ export class LocalEchoAddon implements ITerminalAddon {
     if (backspace) {
       if (this.cursor <= 0) return;
       const newInput =
-        this.input.substr(0, this.cursor - 1) + this.input.substr(this.cursor);
+        this.input.substring(0, this.cursor - 1) + this.input.substring(this.cursor);
       this.clearInput();
       this.cursor -= 1;
       this.setInput(newInput, false);
     } else {
       const newInput =
-        this.input.substr(0, this.cursor) + this.input.substr(this.cursor + 1);
+        this.input.substring(0, this.cursor) + this.input.substring(this.cursor + 1);
       this.setInput(newInput);
     }
   }
@@ -437,7 +449,7 @@ export class LocalEchoAddon implements ITerminalAddon {
    */
   private handleCursorInsert(data: string) {
     const newInput =
-      this.input.substr(0, this.cursor) + data + this.input.substr(this.cursor);
+      this.input.substring(0, this.cursor) + data + this.input.substring(this.cursor);
     this.cursor += data.length;
     this.setInput(newInput);
   }
@@ -504,7 +516,7 @@ export class LocalEchoAddon implements ITerminalAddon {
 
     // Handle ANSI escape sequences
     if (ord == 0x1b) {
-      switch (data.substr(1)) {
+      switch (data.substring(1)) {
         case "[A": // Up arrow
           if (this.history) {
             const value = this.history.getPrevious();
@@ -558,7 +570,7 @@ export class LocalEchoAddon implements ITerminalAddon {
           ofs = closestLeftBoundary(this.input, this.cursor);
           if (ofs != null) {
             this.setInput(
-              this.input.substr(0, ofs) + this.input.substr(this.cursor)
+              this.input.substring(0, ofs) + this.input.substring(this.cursor)
             );
             this.setCursor(ofs);
           }
@@ -583,7 +595,7 @@ export class LocalEchoAddon implements ITerminalAddon {
         case "\t": // TAB
           if (this.enableAutocomplete) {
             if (this.autocompleteHandlers.length > 0) {
-              const inputFragment = this.input.substr(0, this.cursor);
+              const inputFragment = this.input.substring(0, this.cursor);
               const hasTailingSpace = hasTailingWhitespace(inputFragment);
               const candidates = collectAutocompleteCandidates(
                 this.autocompleteHandlers,
@@ -604,7 +616,7 @@ export class LocalEchoAddon implements ITerminalAddon {
                 // Just a single candidate? Complete
                 const lastToken = getLastToken(inputFragment);
                 this.handleCursorInsert(
-                  candidates[0].substr(lastToken.length) + " "
+                  candidates[0].substring(lastToken.length) + " "
                 );
               } else if (candidates.length <= this.maxAutocompleteEntries) {
                 // search for a shared fragement
@@ -614,7 +626,7 @@ export class LocalEchoAddon implements ITerminalAddon {
                 // print complete the shared fragment
                 if (sameFragment) {
                   const lastToken = getLastToken(inputFragment);
-                  this.handleCursorInsert(sameFragment.substr(lastToken.length));
+                  this.handleCursorInsert(sameFragment.substring(lastToken.length));
                 }
 
                 // If we are less than maximum auto-complete candidates, print

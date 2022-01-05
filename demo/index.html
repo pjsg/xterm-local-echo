@@ -56,8 +56,8 @@
     // Infinite loop of reading lines
     const prompt = "~$ ";
     const readLine = async () => {
-      const input = await localEcho.read(prompt);
-      localEcho.println("You typed: '" + input + "'");
+      const input = await localEcho.read();
+      await localEcho.println("You typed: '" + input + "'");
       readLine();
     };
     readLine();

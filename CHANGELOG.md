@@ -1,5 +1,11 @@
 ## Changelog
 
+## 0.1.3
+*2022.1.5*
+
+- Feature: when no prompt is providing, use the part of the current line that has been printed as the prompt.
+- Fix: write should be async function.
+
 ## 0.1.2, 0.1.1
 *2021.10.31*
 
