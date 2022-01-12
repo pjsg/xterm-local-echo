@@ -1,5 +1,11 @@
 ## Changelog
 
+## 0.1.4
+*2022.1.12*
+
+- Feature: Listen on Ctrl-C or Ctrl-D by `onInterrupt` or `onEof`.
+- When entering Ctrl-D, abort pending read operation.
+
 ## 0.1.3
 *2022.1.5*
 

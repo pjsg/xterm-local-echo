@@ -52,6 +52,8 @@
       if (index === 0) return [];
       return ["some-file", "another-file", ".git", ".gitignore"];
     });
+    localEcho.onEof(() => console.log("EOF"));
+    localEcho.onInterrupt(() => console.log("Interrupt"));
 
     // Infinite loop of reading lines
     const prompt = "~$ ";

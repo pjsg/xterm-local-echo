@@ -15,6 +15,7 @@ import {
   replaceTabToSpace,
   parseUnicode,
 } from "./Utils";
+import { IoEventTarget } from './event';
 
 interface Size {
   cols: number;
@@ -40,8 +41,9 @@ export interface Option {
   enableIncompleteInput: boolean;
 }
 
-export class LocalEchoAddon implements ITerminalAddon {
+export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
   constructor(option?: Partial<Option>) {
+    super();
     this.history = new HistoryController(option?.historySize ?? 10);
     this.enableAutocomplete = option?.enableAutocomplete ?? true;
     this.maxAutocompleteEntries = option?.maxAutocompleteEntries ?? 100;
@@ -661,6 +663,19 @@ export class LocalEchoAddon implements ITerminalAddon {
           this.input = "";
           this.cursor = 0;
           if (this.history) this.history.rewind();
+          this.emitInterrupt();
+          break;
+
+        case "\x04": // CTRL+D
+          this.setCursor(this.input.length);
+          this.terminal.write(
+            "^D\r\n" + ((this.activePrompt || {}).prompt || "")
+          );
+          this.input = "";
+          this.cursor = 0;
+          if (this.history) this.history.rewind();
+          this.abortRead();
+          this.emitEof();
           break;
       }
 
