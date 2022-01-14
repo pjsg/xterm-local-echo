@@ -69,6 +69,8 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
 
   private writingPromise: Promise<void> | null = null;
 
+  private remainKeys: string = "";
+
   private terminalSize: Size = {
     cols: 0,
     rows: 0,
@@ -113,10 +115,8 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
       if (typeof prompt === "undefined") {
         const row = this.terminal.buffer.active.cursorY;
         const col = this.terminal.buffer.active.cursorX;
-        console.log(row, col);
         this.terminal.select(0, row, col);
         prompt = this.terminal.getSelection();
-        console.log(prompt);
         this.terminal.clearSelection();
       } else {
         this.terminal.write(prompt);
@@ -131,6 +131,10 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
       this.input = "";
       this.cursor = 0;
       this.active = true;
+
+      if (this.remainKeys.length > 0) {
+        this.handleTermData(this.remainKeys);
+      }
     });
   }
 
@@ -181,7 +185,7 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
    * Prints a message and properly handles new-lines
    */
   async print(message: string) {
-    const normInput = message.replace(/[\r\n]+/g, "\n");
+    const normInput = message.replace(/\r\n?/g, "\n");
     this.writingPromise = new Promise<void>((resolve) => {
       this.terminal.write(normInput.replace(/\n/g, "\r\n"), resolve);
     });
@@ -494,6 +498,7 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
    */
   private handleTermData(data: string) {
     if (!this.active) return;
+    if (data.length === 0) return;
 
     // If we have an active character prompt, satisfy it in priority
     if (this.activeCharPrompt != null) {
@@ -503,12 +508,20 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
       return;
     }
 
-    // If this looks like a pasted input, expand it
+    // Looks like a pasted input.
+    // Handle a line, then put another to this.remainKeys.
+    // When next read call comes, we'll handle them.
     if (data.length > 3 && data.charCodeAt(0) !== 0x1b) {
-      const normData = data.replace(/[\r\n]+/g, "\r");
-      Array.from(normData).forEach((c) => this.handleData(c));
+      for (let i = 0; i < data.length; i++) {
+        this.handleData(data[i]);
+        if (data[i] === '\r') {
+          this.remainKeys = data.substring(i + 1);
+          break;
+        }
+      }
     } else {
       this.handleData(data);
+      this.remainKeys = "";
     }
   }
 

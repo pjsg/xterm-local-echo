@@ -1,6 +1,6 @@
 {
   "name": "@gytx/xterm-local-echo",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "A local echo controller for xterm.js",
   "type": "module",
   "source": "./src/index.ts",
@@ -60,6 +60,5 @@
     "ts-jest": "^27.0.5",
     "typescript": "^4.4.2",
     "xterm": "^4.13.0"
-  },
-  "dependencies": {}
+  }
 }

@@ -1,5 +1,9 @@
 ## Changelog
 
+## 0.1.6
+*2022.1.14*
+- Fix: correctly parse pasted multiline input.
+
 ## 0.1.5
 *2022.1.14*
 - Fix: waiting for current write when a read is requested.
