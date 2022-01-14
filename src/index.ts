@@ -67,6 +67,8 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
   private activePrompt: ActivePrompt | null = null;
   private activeCharPrompt: ActivePrompt | null = null;
 
+  private writingPromise: Promise<void> | null = null;
+
   private terminalSize: Size = {
     cols: 0,
     rows: 0,
@@ -106,6 +108,7 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
    * typing a single line
    */
   public async read(prompt?: string, continuationPrompt = "> ") {
+    await this.writingPromise;
     return new Promise<string>((resolve, reject) => {
       if (typeof prompt === "undefined") {
         const row = this.terminal.buffer.active.cursorY;
@@ -179,9 +182,10 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
    */
   async print(message: string) {
     const normInput = message.replace(/[\r\n]+/g, "\n");
-    return new Promise<void>((resolve) => {
+    this.writingPromise = new Promise<void>((resolve) => {
       this.terminal.write(normInput.replace(/\n/g, "\r\n"), resolve);
     });
+    return this.writingPromise;
   }
 
   /**

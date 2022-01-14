@@ -1,5 +1,9 @@
 ## Changelog
 
+## 0.1.5
+*2022.1.14*
+- Fix: waiting for current write when a read is requested.
+
 ## 0.1.4
 *2022.1.12*
 
