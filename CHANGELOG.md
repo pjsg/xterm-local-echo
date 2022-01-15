@@ -1,5 +1,9 @@
 ## Changelog
 
+## 0.1.7
+*2022.1.15*
+- Fix: cursor position mismatch when input is called frequently.
+
 ## 0.1.6
 *2022.1.14*
 - Fix: correctly parse pasted multiline input.

@@ -186,9 +186,7 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
    */
   async print(message: string) {
     const normInput = message.replace(/\r\n?/g, "\n");
-    this.writingPromise = new Promise<void>((resolve) => {
-      this.terminal.write(normInput.replace(/\n/g, "\r\n"), resolve);
-    });
+    this.writingPromise = this.internalWrite(normInput.replace(/\n/g, "\r\n"));
     return this.writingPromise;
   }
 
@@ -244,6 +242,13 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
   /////////////////////////////////////////////////////////////////////////////
   // Internal API
   /////////////////////////////////////////////////////////////////////////////
+
+  /** Calls terminal.write, but promisify */
+  private async internalWrite(data: string | Uint8Array) {
+    return new Promise<void>((resolve) => {
+      this.terminal.write(data, resolve);
+    });
+  }
 
   /**
    * Apply prompts to the given input
@@ -467,15 +472,15 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
   /**
    * Handle input completion
    */
-  private handleReadComplete() {
+  private async handleReadComplete() {
     if (this.history) {
       this.history.push(this.input);
     }
+    await this.internalWrite("\r\n");
     if (this.activePrompt) {
       this.activePrompt.resolve(this.input);
       this.activePrompt = null;
     }
-    this.terminal.write("\r\n");
     this.active = false;
   }
 
