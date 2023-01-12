@@ -185,7 +185,7 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
    * Prints a message and properly handles new-lines
    */
   async print(message: string) {
-    const normInput = message.replace(/\r\n?/g, "\n");
+    const normInput = message.replace(/[\r\n]?/g, "\n");
     this.writingPromise = this.internalWrite(normInput.replace(/\n/g, "\r\n"));
     return this.writingPromise;
   }
