@@ -266,8 +266,7 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
    * additions to the input.
    */
   private applyPromptOffset(input: string, offset: number) {
-    let newInput = this.applyPrompts(input.substring(0, offset));
-    newInput = this.toSingleWidth(newInput);
+    const newInput = this.applyPrompts(input.substring(0, offset));
     return newInput.replace(ansiRegex(), "").length;
   }
 
@@ -281,7 +280,7 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
    * and move the cursor in the beginning of the first line of the prompt.
    */
   private clearInput() {
-    const currentPrompt = this.toSingleWidth(this.applyPrompts(this.input));
+    const currentPrompt = this.applyPrompts(this.input);
 
     // Get the overall number of lines to clear
     const allRows = countLines(currentPrompt, this.terminalSize.cols);
@@ -321,9 +320,8 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
 
     // Write the new input lines, including the current prompt
     // Need to replace tab here, for new-line compatibility
-    let newPrompt = replaceTabToSpace(this.applyPrompts(newInput));
+    const newPrompt = this.applyPrompts(newInput);
     this.print(newPrompt);
-    newPrompt = this.toSingleWidth(newPrompt);
 
     // Trim cursor overflow
     if (this.cursor > newInput.length) {
