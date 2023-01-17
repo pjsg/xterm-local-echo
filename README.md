@@ -13,6 +13,7 @@ The local echo controller tries to replicate most of the bash-like user experien
 - _Arrow navigation_: Use `left` and `right` arrows to navigate in your input
 - _Word-boundary navigation_: Use `alt+left` and `alt+right` to jump between words
 - _Word-boundary deletion_: Use `alt+backspace` to delete a word
+- _Start/End of line_: Use Ctrl-A and Ctrl-E to move to start / end of line
 - _Multi-line continuation_: Break command to multiple lines if they contain incomplete quotation marks, boolean operators (`&&` or `||`), pipe operator (`|`), or new-line escape sequence (`\`).
 - _Full-navigation on multi-line command_: You are not limited only on the line you are editing, you can navigate and edit all of your lines.
 - _Local History_: Just like bash, access the commands you previously typed using the `up` and `down` arrows.

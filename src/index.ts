@@ -675,6 +675,14 @@ export class LocalEchoAddon extends IoEventTarget implements ITerminalAddon {
           }
           break;
 
+        case "\x01": // CTRL+A
+          this.setCursor(0);
+          break;
+
+        case "\x05": // CTRL+E
+          this.setCursor(this.input.length);
+          break;
+
         case "\x03": // CTRL+C
           this.setCursor(this.input.length);
           this.terminal.write(
